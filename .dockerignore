@@ -1,0 +1,13 @@
+**/bin/
+**/obj/
+.git/
+.github/
+.vs/
+.idea/
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.*
+.env
+*.user
+*.suo
+README.md

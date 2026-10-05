@@ -1,0 +1,15 @@
+* text=auto
+
+# Linux shell scripts must use LF
+*.sh text eol=lf
+
+# Terraform files
+*.tf text eol=lf
+*.tfvars text eol=lf
+*.hcl text eol=lf
+
+# Docker files
+Dockerfile text eol=lf
+docker-compose.yml text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
