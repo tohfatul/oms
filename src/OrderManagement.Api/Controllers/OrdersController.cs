@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using OrderManagement.Application.Orders.CreateOrder;
 
 namespace OrderManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/orders")]
+[Authorize]
 public class OrdersController(IOrderService orderService) : ControllerBase
 {
     [HttpPost]

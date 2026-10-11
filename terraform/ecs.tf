@@ -71,6 +71,18 @@ resource "aws_ecs_task_definition" "api" {
         {
           name  = "Database__RunMigrationsOnly"
           value = "false"
+        },
+        {
+          name  = "AzureAd__Instance"
+          value = "https://login.microsoftonline.com/"
+        },
+        {
+          name  = "AzureAd__TenantId"
+          value = "7a971eb6-18c3-4d21-a9d4-cde169b35a09"
+        },
+        {
+          name  = "AzureAd__ClientId"
+          value = "13a4204d-792f-4ec3-9c1a-80a507104a9b"
         }
       ]
 

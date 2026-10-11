@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OrderManagement.Infrastructure.Persistence;
 
@@ -6,6 +7,7 @@ namespace OrderManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/products")]
+[Authorize]
 public class ProductsController(OrderDbContext dbContext) : ControllerBase
 {
     [HttpGet]

@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Identity.Web;
 using Microsoft.EntityFrameworkCore;
 using OrderManagement.Application.Orders.CreateOrder;
 using OrderManagement.Infrastructure.Orders;
@@ -93,6 +95,14 @@ builder.Services.AddSingleton<IAmazonSimpleNotificationService>(_ =>
 
 builder.Services.AddHostedService<OutboxPublisher>();
 
+// entra id authentication/ authorization
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApi(
+        builder.Configuration.GetSection("AzureAd"));
+
+builder.Services.AddAuthorization();
+
 
 var app = builder.Build();
 
@@ -159,6 +169,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 // We are using HTTP locally for now
 // app.UseHttpsRedirection();
