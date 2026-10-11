@@ -87,3 +87,28 @@ variable "api_domain_name" {
   type        = string
   default     = "api.digizerones.com"
 }
+
+// git ci/cd related
+
+variable "github_owner" {
+  type    = string
+  default = "tohfatul"
+}
+
+variable "github_repository" {
+  type    = string
+  default = "oms"
+}
+
+variable "github_branch" {
+  type    = string
+  default = "main"
+}
+
+variable "github_owner_id" {
+  type = string
+}
+
+variable "github_repository_id" {
+  type = string
+}

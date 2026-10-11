@@ -1,0 +1,195 @@
+name: Deploy OMS to AWS
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: us-east-1
+  AWS_ROLE_ARN: arn:aws:iam::702251962970:role/oms-dev-github-actions
+
+  ECS_CLUSTER: oms-dev-cluster
+
+  API_ECR_REPOSITORY: oms-dev-api
+  ERP_ECR_REPOSITORY: oms-dev-erp-worker
+  NOTIFICATION_ECR_REPOSITORY: oms-dev-notification-worker
+
+  API_SERVICE: oms-dev-api
+  ERP_SERVICE: oms-dev-erp-worker
+  NOTIFICATION_SERVICE: oms-dev-notification-worker
+
+  API_TASK_FAMILY: oms-dev-api
+  ERP_TASK_FAMILY: oms-dev-erp-worker
+  NOTIFICATION_TASK_FAMILY: oms-dev-notification-worker
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore
+        run: dotnet restore OrderManagement.slnx
+
+      - name: Build
+        run: dotnet build OrderManagement.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test OrderManagement.slnx --configuration Release --no-build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # --------------------------------------------------
+      # Build and push Docker images
+      # --------------------------------------------------
+
+      - name: Build and push API image
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build \
+            -f src/OrderManagement.Api/Dockerfile \
+            -t $REGISTRY/$API_ECR_REPOSITORY:$GITHUB_SHA \
+            -t $REGISTRY/$API_ECR_REPOSITORY:latest \
+            .
+
+          docker push $REGISTRY/$API_ECR_REPOSITORY:$GITHUB_SHA
+          docker push $REGISTRY/$API_ECR_REPOSITORY:latest
+
+      - name: Build and push ERP Worker image
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build \
+            -f src/OrderManagement.ErpWorker/Dockerfile \
+            -t $REGISTRY/$ERP_ECR_REPOSITORY:$GITHUB_SHA \
+            -t $REGISTRY/$ERP_ECR_REPOSITORY:latest \
+            .
+
+          docker push $REGISTRY/$ERP_ECR_REPOSITORY:$GITHUB_SHA
+          docker push $REGISTRY/$ERP_ECR_REPOSITORY:latest
+
+      - name: Build and push Notification Worker image
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build \
+            -f src/OrderManagement.NotificationWorker/Dockerfile \
+            -t $REGISTRY/$NOTIFICATION_ECR_REPOSITORY:$GITHUB_SHA \
+            -t $REGISTRY/$NOTIFICATION_ECR_REPOSITORY:latest \
+            .
+
+          docker push $REGISTRY/$NOTIFICATION_ECR_REPOSITORY:$GITHUB_SHA
+          docker push $REGISTRY/$NOTIFICATION_ECR_REPOSITORY:latest
+
+      # --------------------------------------------------
+      # Download existing ECS task definitions
+      # --------------------------------------------------
+
+      - name: Download API task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition $API_TASK_FAMILY \
+            --query taskDefinition \
+            > api-task-definition.json
+
+      - name: Download ERP task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition $ERP_TASK_FAMILY \
+            --query taskDefinition \
+            > erp-task-definition.json
+
+      - name: Download Notification task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition $NOTIFICATION_TASK_FAMILY \
+            --query taskDefinition \
+            > notification-task-definition.json
+
+      # --------------------------------------------------
+      # Replace image URIs with commit-SHA images
+      # --------------------------------------------------
+
+      - name: Render API task definition
+        id: api-task
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: api-task-definition.json
+          container-name: oms-api
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ env.API_ECR_REPOSITORY }}:${{ github.sha }}
+
+      - name: Render ERP task definition
+        id: erp-task
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: erp-task-definition.json
+          container-name: oms-erp-worker
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ERP_ECR_REPOSITORY }}:${{ github.sha }}
+
+      - name: Render Notification task definition
+        id: notification-task
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: notification-task-definition.json
+          container-name: oms-notification-worker
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ env.NOTIFICATION_ECR_REPOSITORY }}:${{ github.sha }}
+
+      # --------------------------------------------------
+      # Deploy workers first
+      # --------------------------------------------------
+
+      - name: Deploy ERP Worker
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.erp-task.outputs.task-definition }}
+          service: ${{ env.ERP_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
+      - name: Deploy Notification Worker
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.notification-task.outputs.task-definition }}
+          service: ${{ env.NOTIFICATION_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
+      # --------------------------------------------------
+      # Deploy API
+      # --------------------------------------------------
+
+      - name: Deploy API
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.api-task.outputs.task-definition }}
+          service: ${{ env.API_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
+      - name: Verify API health
+        run: |
+          curl --fail --retry 5 --retry-delay 10 \
+            https://api.digizerones.com/health/ready
