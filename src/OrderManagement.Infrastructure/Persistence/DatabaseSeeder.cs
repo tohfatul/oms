@@ -19,6 +19,7 @@ public static class DatabaseSeeder
                 Id = Guid.NewGuid(),
                 Sku = "SKU-1001",
                 Name = "Laptop",
+                Description = "Business laptop",
                 Price = 999.00m,
                 IsActive = true
             },
@@ -27,6 +28,7 @@ public static class DatabaseSeeder
                 Id = Guid.NewGuid(),
                 Sku = "SKU-1002",
                 Name = "Monitor",
+                Description = "Business Monitor",
                 Price = 299.00m,
                 IsActive = true
             },
@@ -35,6 +37,7 @@ public static class DatabaseSeeder
                 Id = Guid.NewGuid(),
                 Sku = "SKU-1003",
                 Name = "Keyboard",
+                Description = "Business Keyboard",
                 Price = 79.00m,
                 IsActive = true
             },
@@ -43,6 +46,7 @@ public static class DatabaseSeeder
                 Id = Guid.NewGuid(),
                 Sku = "SKU-1004",
                 Name = "Mouse",
+                Description = "Business Mouse",
                 Price = 49.00m,
                 IsActive = true
             }

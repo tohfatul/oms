@@ -20,6 +20,7 @@ public class ProductsController(OrderDbContext dbContext) : ControllerBase
                 x.Id,
                 x.Sku,
                 x.Name,
+                x.Description,
                 x.Price
             })
             .ToListAsync(cancellationToken);

@@ -30,6 +30,9 @@ public class OrderDbContext(DbContextOptions<OrderDbContext> options)
                 .HasMaxLength(200)
                 .IsRequired();
 
+            entity.Property(x => x.Description)
+                .HasMaxLength(500);
+
             entity.Property(x => x.Price)
                 .HasPrecision(18, 2);
         });
