@@ -13,6 +13,7 @@ permissions:
 
 env:
   AWS_REGION: us-east-1
+
   AWS_ROLE_ARN: arn:aws:iam::702251962970:role/oms-dev-github-actions
 
   ECS_CLUSTER: oms-dev-cluster
@@ -29,27 +30,50 @@ env:
   ERP_TASK_FAMILY: oms-dev-erp-worker
   NOTIFICATION_TASK_FAMILY: oms-dev-notification-worker
 
+
 jobs:
+
   build-test-deploy:
+
     runs-on: ubuntu-latest
 
     steps:
+
+      # --------------------------------------------------
+      # Checkout + .NET build/test
+      # --------------------------------------------------
+
       - name: Checkout source
         uses: actions/checkout@v7
+
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
         with:
           dotnet-version: "10.0.x"
 
+
       - name: Restore
         run: dotnet restore OrderManagement.slnx
 
+
       - name: Build
-        run: dotnet build OrderManagement.slnx --configuration Release --no-restore
+        run: |
+          dotnet build OrderManagement.slnx \
+            --configuration Release \
+            --no-restore
+
 
       - name: Test
-        run: dotnet test OrderManagement.slnx --configuration Release --no-build
+        run: |
+          dotnet test OrderManagement.slnx \
+            --configuration Release \
+            --no-build
+
+
+      # --------------------------------------------------
+      # AWS authentication through GitHub OIDC
+      # --------------------------------------------------
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
@@ -57,12 +81,40 @@ jobs:
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
+
+      # --------------------------------------------------
+      # Get networking information for migration task
+      # --------------------------------------------------
+
+      - name: Get API network configuration
+        run: |
+          SUBNETS=$(aws ecs describe-services \
+            --cluster $ECS_CLUSTER \
+            --services $API_SERVICE \
+            --query "join(',', services[0].networkConfiguration.awsvpcConfiguration.subnets)" \
+            --output text)
+
+          SECURITY_GROUPS=$(aws ecs describe-services \
+            --cluster $ECS_CLUSTER \
+            --services $API_SERVICE \
+            --query "join(',', services[0].networkConfiguration.awsvpcConfiguration.securityGroups)" \
+            --output text)
+
+          echo "API_SUBNETS=$SUBNETS" >> $GITHUB_ENV
+          echo "API_SECURITY_GROUPS=$SECURITY_GROUPS" >> $GITHUB_ENV
+
+
+      # --------------------------------------------------
+      # Amazon ECR login
+      # --------------------------------------------------
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+
       # --------------------------------------------------
-      # Build and push Docker images
+      # Build and push API image
       # --------------------------------------------------
 
       - name: Build and push API image
@@ -78,6 +130,11 @@ jobs:
           docker push $REGISTRY/$API_ECR_REPOSITORY:$GITHUB_SHA
           docker push $REGISTRY/$API_ECR_REPOSITORY:latest
 
+
+      # --------------------------------------------------
+      # Build and push ERP Worker image
+      # --------------------------------------------------
+
       - name: Build and push ERP Worker image
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -90,6 +147,11 @@ jobs:
 
           docker push $REGISTRY/$ERP_ECR_REPOSITORY:$GITHUB_SHA
           docker push $REGISTRY/$ERP_ECR_REPOSITORY:latest
+
+
+      # --------------------------------------------------
+      # Build and push Notification Worker image
+      # --------------------------------------------------
 
       - name: Build and push Notification Worker image
         env:
@@ -104,8 +166,9 @@ jobs:
           docker push $REGISTRY/$NOTIFICATION_ECR_REPOSITORY:$GITHUB_SHA
           docker push $REGISTRY/$NOTIFICATION_ECR_REPOSITORY:latest
 
+
       # --------------------------------------------------
-      # Download existing ECS task definitions
+      # Download current ECS task definitions
       # --------------------------------------------------
 
       - name: Download API task definition
@@ -115,12 +178,14 @@ jobs:
             --query taskDefinition \
             > api-task-definition.json
 
+
       - name: Download ERP task definition
         run: |
           aws ecs describe-task-definition \
             --task-definition $ERP_TASK_FAMILY \
             --query taskDefinition \
             > erp-task-definition.json
+
 
       - name: Download Notification task definition
         run: |
@@ -129,8 +194,9 @@ jobs:
             --query taskDefinition \
             > notification-task-definition.json
 
+
       # --------------------------------------------------
-      # Replace image URIs with commit-SHA images
+      # Render task definitions with commit SHA images
       # --------------------------------------------------
 
       - name: Render API task definition
@@ -141,6 +207,7 @@ jobs:
           container-name: oms-api
           image: ${{ steps.login-ecr.outputs.registry }}/${{ env.API_ECR_REPOSITORY }}:${{ github.sha }}
 
+
       - name: Render ERP task definition
         id: erp-task
         uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -148,6 +215,7 @@ jobs:
           task-definition: erp-task-definition.json
           container-name: oms-erp-worker
           image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ERP_ECR_REPOSITORY }}:${{ github.sha }}
+
 
       - name: Render Notification task definition
         id: notification-task
@@ -157,8 +225,9 @@ jobs:
           container-name: oms-notification-worker
           image: ${{ steps.login-ecr.outputs.registry }}/${{ env.NOTIFICATION_ECR_REPOSITORY }}:${{ github.sha }}
 
+
       # --------------------------------------------------
-      # Deploy workers first
+      # Deploy workers
       # --------------------------------------------------
 
       - name: Deploy ERP Worker
@@ -169,6 +238,7 @@ jobs:
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
 
+
       - name: Deploy Notification Worker
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
@@ -177,19 +247,55 @@ jobs:
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
 
+
       # --------------------------------------------------
-      # Deploy API
+      # Run EF Core migration task, then deploy API
       # --------------------------------------------------
 
-      - name: Deploy API
+      - name: Run database migration and deploy API
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.api-task.outputs.task-definition }}
-          service: ${{ env.API_SERVICE }}
+
           cluster: ${{ env.ECS_CLUSTER }}
+          service: ${{ env.API_SERVICE }}
+
+          run-task: true
+          wait-for-task-stopped: true
+
+          run-task-launch-type: FARGATE
+
+          run-task-subnets: ${{ env.API_SUBNETS }}
+
+          run-task-security-groups: ${{ env.API_SECURITY_GROUPS }}
+
+          run-task-assign-public-IP: ENABLED
+
+          run-task-container-overrides: >-
+            [
+              {
+                "name": "oms-api",
+                "environment": [
+                  {
+                    "name": "Database__RunMigrationsOnly",
+                    "value": "true"
+                  }
+                ]
+              }
+            ]
+
           wait-for-service-stability: true
+          wait-max-delay-seconds: 15
+
+
+      # --------------------------------------------------
+      # Verify public API
+      # --------------------------------------------------
 
       - name: Verify API health
         run: |
-          curl --fail --retry 5 --retry-delay 10 \
+          curl \
+            --fail \
+            --retry 5 \
+            --retry-delay 10 \
             https://api.digizerones.com/health/ready

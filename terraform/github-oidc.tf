@@ -86,12 +86,14 @@ data "aws_iam_policy_document" "github_actions" {
   }
 
   statement {
-    sid    = "TaskDefinitions"
+    sid    = "TaskDefinitionsAndMigrations"
     effect = "Allow"
 
     actions = [
       "ecs:RegisterTaskDefinition",
-      "ecs:DescribeTaskDefinition"
+      "ecs:DescribeTaskDefinition",
+      "ecs:RunTask",
+      "ecs:DescribeTasks"
     ]
 
     resources = ["*"]
