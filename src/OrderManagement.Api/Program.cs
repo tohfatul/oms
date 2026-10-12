@@ -103,6 +103,17 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
+// cors config
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("OmsWeb", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 
 var app = builder.Build();
 
@@ -169,6 +180,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+app.UseCors("OmsWeb");
 
 app.UseAuthentication();
 app.UseAuthorization();
