@@ -109,7 +109,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("OmsWeb", policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173")
+            .WithOrigins("http://localhost:5173", "https://app.digizerones.com")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });

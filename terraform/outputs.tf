@@ -138,3 +138,21 @@ output "github_actions_role_arn" {
   description = "IAM role assumed by GitHub Actions through OIDC"
   value       = aws_iam_role.github_actions.arn
 }
+
+// regarding s3 web
+
+output "web_bucket_name" {
+  value = aws_s3_bucket.web.bucket
+}
+
+output "web_cloudfront_distribution_id" {
+  value = aws_cloudfront_distribution.web.id
+}
+
+output "web_cloudfront_domain_name" {
+  value = aws_cloudfront_distribution.web.domain_name
+}
+
+output "web_url" {
+  value = "https://${local.web_domain}"
+}
