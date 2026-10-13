@@ -78,7 +78,7 @@ resource "aws_ecs_task_definition" "api" {
         },
         {
           name  = "AzureAd__TenantId"
-          value = "7a971eb6-18c3-4d21-a9d4-cde169b35a09"
+          value = "common"
         },
         {
           name  = "AzureAd__ClientId"
@@ -225,6 +225,12 @@ resource "aws_ecs_service" "erp_worker" {
 
     assign_public_ip = true
   }
+
+  lifecycle {
+    ignore_changes = [
+      task_definition
+    ]
+  }
 }
 
 // notification worker
@@ -248,6 +254,12 @@ resource "aws_ecs_service" "notification_worker" {
     ]
 
     assign_public_ip = true
+  }
+
+  lifecycle {
+    ignore_changes = [
+      task_definition
+    ]
   }
 }
 
