@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using OrderManagement.Application.Orders.CreateOrder;
 using System.Security.Claims;
+using Microsoft.Identity.Web;
 
 namespace OrderManagement.Api.Controllers;
 
@@ -62,8 +63,8 @@ public class OrdersController(IOrderService orderService) : ControllerBase
     // helpers
     private (string TenantId, string UserObjectId)? GetCurrentUser()
     {
-        var tenantId = User.FindFirstValue("tid");
-        var userObjectId = User.FindFirstValue("oid");
+        var tenantId = User.GetTenantId();
+        var userObjectId = User.GetObjectId();
 
         if (string.IsNullOrWhiteSpace(tenantId) ||
             string.IsNullOrWhiteSpace(userObjectId))
