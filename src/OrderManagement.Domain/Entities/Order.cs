@@ -13,6 +13,10 @@ namespace OrderManagement.Domain.Entities
 
         public required string CustomerId { get; set; }
 
+        public string UserTenantId { get; set; } = string.Empty;
+
+        public string UserObjectId { get; set; } = string.Empty;
+
         public OrderStatus Status { get; set; }
 
         public decimal TotalAmount { get; set; }
@@ -20,5 +24,6 @@ namespace OrderManagement.Domain.Entities
         public DateTimeOffset CreatedAt { get; set; }
 
         public ICollection<OrderItem> Items { get; set; } = [];
+
     }
 }

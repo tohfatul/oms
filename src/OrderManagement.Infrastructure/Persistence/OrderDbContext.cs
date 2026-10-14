@@ -59,6 +59,20 @@ public class OrderDbContext(DbContextOptions<OrderDbContext> options)
                 .WithOne(x => x.Order)
                 .HasForeignKey(x => x.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            entity.Property(x => x.UserTenantId)
+                .HasMaxLength(50)
+                .IsRequired();
+
+            entity.Property(x => x.UserObjectId)
+                .HasMaxLength(50)
+                .IsRequired();
+
+            entity.HasIndex(x => new
+            {
+                x.UserTenantId,
+                x.UserObjectId
+            });
         });
 
         modelBuilder.Entity<OrderItem>(entity =>

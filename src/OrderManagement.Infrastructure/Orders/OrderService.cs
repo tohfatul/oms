@@ -13,8 +13,10 @@ namespace OrderManagement.Infrastructure.Orders;
 public class OrderService(OrderDbContext dbContext) : IOrderService
 {
     public async Task<CreateOrderResponse> CreateAsync(
-        CreateOrderRequest request,
-        CancellationToken cancellationToken)
+     CreateOrderRequest request,
+     string tenantId,
+     string userObjectId,
+     CancellationToken cancellationToken)
     {
         if (request.Items.Count == 0)
         {
@@ -39,7 +41,8 @@ public class OrderService(OrderDbContext dbContext) : IOrderService
 
         if (products.Count != productIds.Count)
         {
-            throw new ValidationException("One or more products are invalid or inactive.");
+            throw new ValidationException(
+                "One or more products are invalid or inactive.");
         }
 
         var order = new Order
@@ -48,6 +51,10 @@ public class OrderService(OrderDbContext dbContext) : IOrderService
             OrderNumber =
                 $"ORD-{DateTime.UtcNow:yyyyMMddHHmmss}-{Random.Shared.Next(1000, 9999)}",
             CustomerId = request.CustomerId,
+
+            UserTenantId = tenantId,
+            UserObjectId = userObjectId,
+
             Status = OrderStatus.Submitted,
             CreatedAt = DateTimeOffset.UtcNow
         };
@@ -114,14 +121,19 @@ public class OrderService(OrderDbContext dbContext) : IOrderService
 
 
     public async Task<GetOrderResponse?> GetByIdAsync(
-    Guid orderId,
+    Guid id,
+    string tenantId,
+    string userObjectId,
     CancellationToken cancellationToken)
     {
         var order = await dbContext.Orders
             .AsNoTracking()
             .Include(x => x.Items)
             .FirstOrDefaultAsync(
-                x => x.Id == orderId,
+                x => 
+                x.Id == id &&
+                x.UserTenantId == tenantId &&
+                x.UserObjectId == userObjectId,
                 cancellationToken);
 
         if (order is null)
