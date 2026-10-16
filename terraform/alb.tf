@@ -139,3 +139,41 @@ resource "aws_lb_listener" "https" {
     target_group_arn = aws_lb_target_group.api.arn
   }
 }
+
+//ALB target group for AI
+
+resource "aws_lb_target_group" "ai" {
+  name        = "${var.project_name}-${var.environment}-ai-tg"
+  port        = 8000
+  protocol    = "HTTP"
+  vpc_id      = aws_vpc.main.id
+  target_type = "ip"
+
+  health_check {
+    enabled             = true
+    path                = "/health"
+    matcher             = "200"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 3
+  }
+}
+
+//listener rule for AI
+
+resource "aws_lb_listener_rule" "ai" {
+  listener_arn = aws_lb_listener.https.arn
+  priority     = 100
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.ai.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/ai/*"]
+    }
+  }
+}

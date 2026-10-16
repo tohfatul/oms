@@ -25,7 +25,7 @@ resource "aws_iam_role_policy_attachment" "ecs_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
-// api tasl role
+// api task role
 
 resource "aws_iam_role" "api_task" {
   name               = "${var.project_name}-${var.environment}-api-task-role"
@@ -139,4 +139,45 @@ resource "aws_iam_role_policy" "ecs_execution_secrets" {
   name   = "${var.project_name}-${var.environment}-ecs-secrets-policy"
   role   = aws_iam_role.ecs_execution.id
   policy = data.aws_iam_policy_document.ecs_execution_secrets.json
+}
+
+
+// ai task role
+
+resource "aws_iam_role" "ai_task" {
+  name = "${var.project_name}-${var.environment}-ai-task-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "ecs-tasks.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+
+data "aws_iam_policy_document" "ai_task" {
+  statement {
+    sid = "InvokeBedrock"
+
+    actions = [
+      "bedrock:InvokeModel"
+    ]
+
+    resources = [
+      "*"
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "ai_task" {
+  name   = "${var.project_name}-${var.environment}-ai-task-policy"
+  role   = aws_iam_role.ai_task.id
+  policy = data.aws_iam_policy_document.ai_task.json
 }

@@ -1,0 +1,93 @@
+name: Deploy OMS AI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "src/order-management-ai/**"
+      - ".github/workflows/deploy-ai.yml"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: us-east-1
+  AWS_ROLE_ARN: arn:aws:iam::702251962970:role/oms-dev-github-actions
+
+  ECR_REPOSITORY: oms-dev-ai
+  ECS_CLUSTER: oms-dev-cluster
+  ECS_SERVICE: oms-dev-ai
+  ECS_TASK_FAMILY: oms-dev-ai
+  CONTAINER_NAME: oms-ai
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push AI image
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+            src/order-management-ai
+
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      - name: Download current task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition $ECS_TASK_FAMILY \
+            --query taskDefinition \
+            > ai-task-definition.json
+
+      - name: Render AI task definition
+        id: render-ai
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ai-task-definition.json
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+
+      - name: Deploy AI service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render-ai.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+          wait-max-delay-seconds: 15
+
+      - name: Verify AI health
+        run: |
+          curl --fail --retry 10 --retry-delay 10 \
+            https://api.digizerones.com/ai/health
+
+      - name: Verify mock chat
+        run: |
+          curl --fail \
+            -X POST \
+            https://api.digizerones.com/ai/chat \
+            -H "Content-Type: application/json" \
+            -d '{"message":"CI deployment test"}'

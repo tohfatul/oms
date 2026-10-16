@@ -70,18 +70,19 @@ data "aws_iam_policy_document" "github_actions" {
 
     actions = [
       "ecr:BatchCheckLayerAvailability",
-      "ecr:GetDownloadUrlForLayer",
       "ecr:BatchGetImage",
-      "ecr:InitiateLayerUpload",
-      "ecr:UploadLayerPart",
       "ecr:CompleteLayerUpload",
-      "ecr:PutImage"
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:InitiateLayerUpload",
+      "ecr:PutImage",
+      "ecr:UploadLayerPart"
     ]
 
     resources = [
       aws_ecr_repository.api.arn,
       aws_ecr_repository.erp_worker.arn,
-      aws_ecr_repository.notification_worker.arn
+      aws_ecr_repository.notification_worker.arn,
+      aws_ecr_repository.ai.arn
     ]
   }
 

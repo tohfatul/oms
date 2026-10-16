@@ -109,3 +109,14 @@ resource "aws_subnet" "db_2" {
     Name = "${var.project_name}-${var.environment}-db-2"
   }
 }
+
+// for ai app
+
+resource "aws_vpc_security_group_ingress_rule" "ecs_ai_from_alb" {
+  security_group_id            = aws_security_group.ecs_tasks.id
+  referenced_security_group_id = aws_security_group.alb.id
+
+  from_port   = 8000
+  to_port     = 8000
+  ip_protocol = "tcp"
+}
