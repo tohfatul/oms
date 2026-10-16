@@ -136,12 +136,36 @@ data "aws_iam_policy_document" "ecs_execution_secrets" {
 }
 
 resource "aws_iam_role_policy" "ecs_execution_secrets" {
-  name   = "${var.project_name}-${var.environment}-ecs-secrets-policy"
-  role   = aws_iam_role.ecs_execution.id
-  policy = data.aws_iam_policy_document.ecs_execution_secrets.json
+  name = "${var.project_name}-${var.environment}-ecs-secrets-policy"
+  role = aws_iam_role.ecs_execution.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+
+    Statement = [
+      {
+        Sid    = "ReadRdsSecret"
+        Effect = "Allow"
+
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ]
+
+        Resource = aws_db_instance.postgres.master_user_secret[0].secret_arn
+      },
+      {
+        Sid    = "ReadOpenAiApiKey"
+        Effect = "Allow"
+
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ]
+
+        Resource = data.aws_secretsmanager_secret.openai_api_key.arn
+      }
+    ]
+  })
 }
-
-
 // ai task role
 
 resource "aws_iam_role" "ai_task" {

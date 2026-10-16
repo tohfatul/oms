@@ -7,6 +7,9 @@ class Settings(BaseSettings):
 
     llm_provider: str = "mock"
 
+    openai_api_key: str = ""
+    openai_model: str = "gpt-5.6"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         case_sensitive=False,

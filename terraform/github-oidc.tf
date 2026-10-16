@@ -112,7 +112,8 @@ data "aws_iam_policy_document" "github_actions" {
     resources = [
       aws_ecs_service.api.id,
       aws_ecs_service.erp_worker.id,
-      aws_ecs_service.notification_worker.id
+      aws_ecs_service.notification_worker.id,
+      aws_ecs_service.ai.id
     ]
   }
 
@@ -128,7 +129,8 @@ data "aws_iam_policy_document" "github_actions" {
       aws_iam_role.ecs_execution.arn,
       aws_iam_role.api_task.arn,
       aws_iam_role.erp_worker_task.arn,
-      aws_iam_role.notification_worker_task.arn
+      aws_iam_role.notification_worker_task.arn,
+      aws_iam_role.ai_task.arn
     ]
   }
 

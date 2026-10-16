@@ -375,16 +375,27 @@ resource "aws_ecs_task_definition" "ai" {
 
       environment = [
         {
-          name  = "LLM_PROVIDER"
-          value = "mock"
-        },
-        {
           name  = "AWS_REGION"
           value = var.aws_region
         },
         {
           name  = "BEDROCK_MODEL_ID"
           value = "us.amazon.nova-2-lite-v1:0"
+        },
+        {
+          name  = "LLM_PROVIDER"
+          value = "openai"
+        },
+        {
+          name  = "OPENAI_MODEL"
+          value = "gpt-4.1-mini"
+        }
+      ]
+
+      secrets = [
+        {
+          name      = "OPENAI_API_KEY"
+          valueFrom = data.aws_secretsmanager_secret.openai_api_key.arn
         }
       ]
 

@@ -1,7 +1,7 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 
+from app.agents.graph import graph
 from app.models.chat import ChatRequest, ChatResponse
-from app.services.llm_factory import create_llm_service
 
 
 router = APIRouter(
@@ -9,20 +9,14 @@ router = APIRouter(
     tags=["chat"],
 )
 
-llm_service = create_llm_service()
-
 
 @router.post("", response_model=ChatResponse)
 def chat(request: ChatRequest):
-    try:
-        response = llm_service.chat(request.message)
+    result = graph.invoke({
+        "message": request.message,
+        "response": "",
+    })
 
-        return ChatResponse(
-            message=response
-        )
-
-    except RuntimeError as exc:
-        raise HTTPException(
-            status_code=502,
-            detail=str(exc),
-        ) from exc
+    return ChatResponse(
+        message=result["response"]
+    )

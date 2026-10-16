@@ -3,3 +3,7 @@ uvicorn[standard]
 boto3
 pydantic-settings
 python-dotenv
+langgraph
+langchain
+langchain-aws
+openai
