@@ -14,7 +14,7 @@ permissions:
 env:
   AWS_REGION: us-east-1
 
-  AWS_ROLE_ARN: arn:aws:iam::702251962970:role/oms-dev-github-actions
+  AWS_ROLE_ARN: arn:aws:iam::697589240899:role/oms-dev-github-actions
 
   ECS_CLUSTER: oms-dev-cluster
 

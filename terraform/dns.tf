@@ -1,10 +1,9 @@
-data "aws_route53_zone" "main" {
-  name         = "digizerones.com."
-  private_zone = false
+resource "aws_route53_zone" "main" {
+  name = "digizerones.com"
 }
 
 resource "aws_route53_record" "api" {
-  zone_id = data.aws_route53_zone.main.zone_id
+  zone_id = aws_route53_zone.main.zone_id
   name    = var.api_domain_name
   type    = "A"
 

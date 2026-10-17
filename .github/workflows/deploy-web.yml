@@ -17,10 +17,10 @@ permissions:
 env:
   AWS_REGION: us-east-1
 
-  AWS_ROLE_ARN: arn:aws:iam::702251962970:role/oms-dev-github-actions
+  AWS_ROLE_ARN: arn:aws:iam::697589240899:role/oms-dev-github-actions
 
-  WEB_BUCKET: oms-dev-web-702251962970
-  CLOUDFRONT_DISTRIBUTION_ID: E2ALJMNREVUNU2
+  WEB_BUCKET: oms-dev-web-697589240899
+  CLOUDFRONT_DISTRIBUTION_ID: E2WYTMWO9WH3X2
 
   VITE_ENTRA_CLIENT_ID: f2d75a67-e957-467c-807a-7c6cbf8d19d0
   VITE_ENTRA_TENANT_ID: 7a971eb6-18c3-4d21-a9d4-cde169b35a09

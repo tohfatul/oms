@@ -56,7 +56,7 @@ resource "aws_route53_record" "web_certificate_validation" {
     }
   }
 
-  zone_id = data.aws_route53_zone.main.zone_id
+  zone_id = aws_route53_zone.main.zone_id
   name    = each.value.name
   type    = each.value.type
   records = [each.value.record]
@@ -82,7 +82,7 @@ resource "aws_cloudfront_distribution" "web" {
   enabled             = true
   is_ipv6_enabled     = true
   default_root_object = "index.html"
-  aliases             = [local.web_domain]
+  aliases             = []
   price_class         = "PriceClass_100"
 
   origin {
@@ -126,9 +126,7 @@ resource "aws_cloudfront_distribution" "web" {
   }
 
   viewer_certificate {
-    acm_certificate_arn      = aws_acm_certificate_validation.web.certificate_arn
-    ssl_support_method       = "sni-only"
-    minimum_protocol_version = "TLSv1.2_2021"
+    cloudfront_default_certificate = true
   }
 
   restrictions {
@@ -183,7 +181,7 @@ resource "aws_s3_bucket_policy" "web" {
 // for app.digizerones.com
 
 resource "aws_route53_record" "web" {
-  zone_id = data.aws_route53_zone.main.zone_id
+  zone_id = aws_route53_zone.main.zone_id
   name    = local.web_domain
   type    = "A"
 

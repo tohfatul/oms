@@ -395,7 +395,7 @@ resource "aws_ecs_task_definition" "ai" {
       secrets = [
         {
           name      = "OPENAI_API_KEY"
-          valueFrom = data.aws_secretsmanager_secret.openai_api_key.arn
+          valueFrom = "${data.aws_secretsmanager_secret.openai_api_key.arn}:OPENAI_API_KEY::"
         }
       ]
 
