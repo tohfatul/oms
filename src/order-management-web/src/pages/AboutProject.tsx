@@ -50,12 +50,13 @@ function AboutProject() {
             Full-Stack Cloud Portfolio Project
           </span>
 
-          <h1 className="display-6 fw-bold">Order Management System</h1>
+          <h1 className="display-6 fw-bold">OrderFlow</h1>
 
           <p className="lead mb-3">
-            A production-oriented Order Management System demonstrating modern
-            full-stack architecture, secure authentication, event-driven
-            processing, cloud-native deployment, and infrastructure automation.
+            A production-oriented Cloud-Native Order Processing Platform
+            demonstrating modern full-stack architecture, secure authentication,
+            event-driven processing, cloud-native deployment, and infrastructure
+            automation.
           </p>
 
           <p className="text-secondary mb-0">

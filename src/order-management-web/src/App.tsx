@@ -124,7 +124,9 @@ function App() {
         <div className="container py-3">
           <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
             <div>
-              <h1 className="h3 mb-0">Order Management System</h1>
+              <h1 className="h3 mb-0">
+                OrderFlow — Cloud-Native Portfolio Project
+              </h1>
               <small className="text-secondary">
                 Full-Stack • Cloud • Event-Driven Architecture • AI
               </small>
@@ -138,7 +140,7 @@ function App() {
                 }`}
                 onClick={() => setView("oms")}
               >
-                OMS
+                OrderFlow
               </button>
 
               <button
@@ -163,11 +165,11 @@ function App() {
             <UnauthenticatedTemplate>
               <div className="card shadow-sm">
                 <div className="card-body p-4">
-                  <h2 className="h4">Welcome to the OMS</h2>
+                  <h2 className="h4">Welcome to the OrderFlow System</h2>
 
                   <p className="text-secondary mb-3">
                     Sign in with Microsoft to access products, create orders,
-                    and use the authenticated Order Management System.
+                    and use the authenticated OrderFlow System.
                   </p>
 
                   <button

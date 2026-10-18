@@ -4,7 +4,7 @@ function AppFooter() {
       <div className="container py-3">
         <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
           <small className="text-secondary">
-            Order Management System • Built by Md Tohfatul Islam
+            OrderFlow • Built by Md Tohfatul Islam
           </small>
 
           <div className="d-flex gap-3">
