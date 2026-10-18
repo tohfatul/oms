@@ -13,13 +13,19 @@ import { createOrder } from "./api/orderApi";
 import { ProductList } from "./components/ProductList";
 import { Cart } from "./components/Cart";
 import { OrderConfirmation } from "./components/OrderConfirmation";
+import AppFooter from "./components/AppFooter";
+import AboutProject from "./pages/AboutProject";
 
 import type { Product } from "./types/product";
 import type { CartItem } from "./types/cart";
 import type { CreateOrderResponse } from "./types/order";
 
+type View = "oms" | "about";
+
 function App() {
   const { instance, accounts, inProgress } = useMsal();
+
+  const [view, setView] = useState<View>("oms");
 
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -113,55 +119,132 @@ function App() {
   };
 
   return (
-    <main className="container py-4">
-      <h1 className="mb-4">Order Management System</h1>
+    <div className="d-flex flex-column min-vh-100">
+      <header className="border-bottom bg-white">
+        <div className="container py-3">
+          <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+              <h1 className="h3 mb-0">Order Management System</h1>
+              <small className="text-secondary">
+                Full-Stack • Cloud • Event-Driven Architecture • AI
+              </small>
+            </div>
 
-      <UnauthenticatedTemplate>
-        <p>Please sign in to access the OMS.</p>
+            <nav className="d-flex gap-2">
+              <button
+                type="button"
+                className={`btn ${
+                  view === "oms" ? "btn-primary" : "btn-outline-primary"
+                }`}
+                onClick={() => setView("oms")}
+              >
+                OMS
+              </button>
 
-        <button
-          onClick={login}
-          disabled={inProgress !== InteractionStatus.None}
-        >
-          {inProgress === InteractionStatus.None
-            ? "Sign in with Microsoft"
-            : "Signing in..."}
-        </button>
-      </UnauthenticatedTemplate>
-
-      <AuthenticatedTemplate>
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <p className="mb-0">
-            Signed in as <strong>{accounts[0]?.username}</strong>
-          </p>
-
-          <button className="btn btn-outline-secondary" onClick={logout}>
-            Sign out
-          </button>
+              <button
+                type="button"
+                className={`btn ${
+                  view === "about" ? "btn-primary" : "btn-outline-primary"
+                }`}
+                onClick={() => setView("about")}
+              >
+                About Project
+              </button>
+            </nav>
+          </div>
         </div>
+      </header>
 
-        <button
-          className="btn btn-primary"
-          onClick={loadProducts}
-          disabled={loading}
-        >
-          {loading ? "Loading..." : "Load Products"}
-        </button>
+      <main className="flex-grow-1">
+        {view === "about" ? (
+          <AboutProject />
+        ) : (
+          <div className="container py-4">
+            <UnauthenticatedTemplate>
+              <div className="card shadow-sm">
+                <div className="card-body p-4">
+                  <h2 className="h4">Welcome to the OMS</h2>
 
-        {error && <div className="alert alert-danger mt-3">{error}</div>}
+                  <p className="text-secondary mb-3">
+                    Sign in with Microsoft to access products, create orders,
+                    and use the authenticated Order Management System.
+                  </p>
 
-        <ProductList products={products} onAdd={addToCart} />
+                  <button
+                    className="btn btn-primary"
+                    onClick={login}
+                    disabled={inProgress !== InteractionStatus.None}
+                  >
+                    {inProgress === InteractionStatus.None
+                      ? "Sign in with Microsoft"
+                      : "Signing in..."}
+                  </button>
 
-        <Cart
-          cart={cart}
-          customerId={customerId}
-          onCustomerIdChange={setCustomerId}
-          onSubmit={submitOrder}
-        />
+                  <p className="small text-secondary mt-3 mb-0">
+                    You can also explore the architecture, technologies, and
+                    project features from the{" "}
+                    <span
+                      role="link"
+                      tabIndex={0}
+                      className="text-primary fw-semibold text-decoration-underline"
+                      style={{ cursor: "pointer" }}
+                      onClick={() => setView("about")}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          setView("about");
+                        }
+                      }}
+                    >
+                      About Project
+                    </span>{" "}
+                    section without signing in.
+                  </p>
+                </div>
+              </div>
+            </UnauthenticatedTemplate>
 
-        <OrderConfirmation order={createdOrder} />
-      </AuthenticatedTemplate>
-    </main>
+            <AuthenticatedTemplate>
+              <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+                <div>
+                  <h2 className="h4 mb-1">Order Workspace</h2>
+
+                  <p className="mb-0 text-secondary">
+                    Signed in as <strong>{accounts[0]?.username}</strong>
+                  </p>
+                </div>
+
+                <button className="btn btn-outline-secondary" onClick={logout}>
+                  Sign out
+                </button>
+              </div>
+
+              <button
+                className="btn btn-primary"
+                onClick={loadProducts}
+                disabled={loading}
+              >
+                {loading ? "Loading..." : "Load Products"}
+              </button>
+
+              {error && <div className="alert alert-danger mt-3">{error}</div>}
+
+              <ProductList products={products} onAdd={addToCart} />
+
+              <Cart
+                cart={cart}
+                customerId={customerId}
+                onCustomerIdChange={setCustomerId}
+                onSubmit={submitOrder}
+              />
+
+              <OrderConfirmation order={createdOrder} />
+            </AuthenticatedTemplate>
+          </div>
+        )}
+      </main>
+
+      <AppFooter />
+    </div>
   );
 }
 
