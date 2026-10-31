@@ -7,3 +7,7 @@ langgraph
 langchain
 langchain-aws
 openai
+httpx
+PyJWT[crypto]
+psycopg[binary]
+pgvector

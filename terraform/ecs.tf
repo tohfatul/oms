@@ -389,6 +389,38 @@ resource "aws_ecs_task_definition" "ai" {
         {
           name  = "OPENAI_MODEL"
           value = "gpt-4.1-mini"
+        },
+        {
+          name  = "ENTRA_API_CLIENT_ID"
+          value = "13a4204d-792f-4ec3-9c1a-80a507104a9b"
+        },
+        {
+          name  = "ENTRA_REQUIRED_SCOPE"
+          value = "access_as_user"
+        },
+        {
+          name  = "DATABASE_HOST"
+          value = aws_db_instance.postgres.address
+        },
+        {
+          name  = "DATABASE_PORT"
+          value = tostring(aws_db_instance.postgres.port)
+        },
+        {
+          name  = "DATABASE_NAME"
+          value = var.db_name
+        },
+        {
+          name  = "DATABASE_USERNAME"
+          value = var.db_username
+        },
+        {
+          name  = "EMBEDDING_MODEL"
+          value = "text-embedding-3-small"
+        },
+        {
+          name  = "EMBEDDING_DIMENSIONS"
+          value = "1536"
         }
       ]
 
@@ -396,6 +428,10 @@ resource "aws_ecs_task_definition" "ai" {
         {
           name      = "OPENAI_API_KEY"
           valueFrom = "${data.aws_secretsmanager_secret.openai_api_key.arn}:OPENAI_API_KEY::"
+        },
+        {
+          name      = "DATABASE_PASSWORD"
+          valueFrom = "${aws_db_instance.postgres.master_user_secret[0].secret_arn}:password::"
         }
       ]
 

@@ -12,7 +12,11 @@ class BedrockService(LLMService):
             region_name=settings.aws_region,
         )
 
-    def chat(self, message: str) -> str:
+    def chat(
+        self,
+        message: str,
+        history=None,
+    ) -> str:
         try:
             response = self.client.converse(
                 modelId=settings.bedrock_model_id,
