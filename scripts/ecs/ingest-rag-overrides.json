@@ -1,0 +1,12 @@
+{
+  "containerOverrides": [
+    {
+      "name": "oms-ai",
+      "command": [
+        "python",
+        "-m",
+        "app.rag.ingest"
+      ]
+    }
+  ]
+}
