@@ -392,7 +392,7 @@ resource "aws_ecs_task_definition" "ai" {
         },
         {
           name  = "ENTRA_API_CLIENT_ID"
-          value = "13a4204d-792f-4ec3-9c1a-80a507104a9b"
+          value = var.entra_api_client_id
         },
         {
           name  = "ENTRA_REQUIRED_SCOPE"

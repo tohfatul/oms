@@ -112,3 +112,8 @@ variable "github_owner_id" {
 variable "github_repository_id" {
   type = string
 }
+
+variable "entra_api_client_id" {
+  description = "Microsoft Entra ID client ID for the OrderFlow API"
+  type        = string
+}
