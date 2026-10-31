@@ -19,6 +19,7 @@ import AboutProject from "./pages/AboutProject";
 import type { Product } from "./types/product";
 import type { CartItem } from "./types/cart";
 import type { CreateOrderResponse } from "./types/order";
+import { AiAssistant } from "./components/AiAssistant";
 
 type View = "oms" | "about";
 
@@ -220,13 +221,18 @@ function App() {
                 </button>
               </div>
 
-              <button
-                className="btn btn-primary"
-                onClick={loadProducts}
-                disabled={loading}
-              >
-                {loading ? "Loading..." : "Load Products"}
-              </button>
+              {accounts[0] && (
+                <AiAssistant instance={instance} account={accounts[0]} />
+              )}
+              <div className="mt-4">
+                <button
+                  className="btn btn-primary"
+                  onClick={loadProducts}
+                  disabled={loading}
+                >
+                  {loading ? "Loading..." : "Load Products"}
+                </button>
+              </div>
 
               {error && <div className="alert alert-danger mt-3">{error}</div>}
 

@@ -15,14 +15,16 @@ const technologies = {
     "Secrets Manager",
   ],
   DevOps: ["Terraform", "Docker", "GitHub Actions", "AWS OIDC"],
-  AI: [
-    "Python",
-    "FastAPI",
-    "LangGraph",
-    "OpenAI",
-    "Amazon Bedrock",
-    "Amazon Bedrock AgentCore",
-  ],
+  // AI: [
+  //   "Python",
+  //   "FastAPI",
+  //   "LangGraph",
+  //   "OpenAI",
+  //   "Amazon Bedrock",
+  //   "Amazon Bedrock AgentCore",
+  // ],
+
+  AI: ["Python", "FastAPI", "LangGraph", "OpenAI", "RAG", "pgvector"],
 };
 
 const features = [
@@ -38,6 +40,11 @@ const features = [
   "Infrastructure as Code with Terraform",
   "Automated CI/CD using GitHub Actions with AWS OIDC federation",
   "HTTPS delivery through CloudFront and Application Load Balancer",
+  "AI assistant with natural-language product and order interactions",
+  "Secure AI tool calling with Microsoft Entra ID access-token validation",
+  "Retrieval-Augmented Generation using PostgreSQL and pgvector",
+  "Grounded AI responses with retrieved source citations",
+  "Explicit confirmation workflow before AI-assisted order submission",
 ];
 
 function AboutProject() {
@@ -55,13 +62,14 @@ function AboutProject() {
           <p className="lead mb-3">
             A production-oriented Cloud-Native Order Processing Platform
             demonstrating modern full-stack architecture, secure authentication,
-            event-driven processing, cloud-native deployment, and infrastructure
-            automation.
+            event-driven processing, AI-assisted workflows, Retrieval-Augmented
+            Generation, cloud-native deployment, and infrastructure automation.
           </p>
 
           <p className="text-secondary mb-0">
             The application combines a React frontend, ASP.NET Core APIs,
-            PostgreSQL, asynchronous messaging, background workers, and a
+            PostgreSQL, asynchronous messaging, background workers, a
+            Python/LangGraph AI service, vector-based knowledge retrieval, and a
             production-style AWS deployment.
           </p>
         </div>
@@ -277,33 +285,79 @@ function AboutProject() {
 
       {/* AI */}
       <section>
-        <h2 className="h3 mb-3">AI Integration & Roadmap</h2>
+        <h2 className="h3 mb-3">AI Capabilities & Roadmap</h2>
 
         <div className="card border-primary shadow-sm">
           <div className="card-body p-4 text-start">
             <p>
-              The solution includes a separate Python/FastAPI AI service with
-              LangGraph and an LLM-provider abstraction.
+              OrderFlow includes a separately deployed Python/FastAPI AI service
+              built with LangGraph and an LLM-provider abstraction. The
+              assistant integrates securely with the OrderFlow APIs and supports
+              both transactional workflows and Retrieval-Augmented Generation.
             </p>
 
+            <h3 className="h5 mt-4">Implemented AI Capabilities</h3>
+
+            <ul>
+              <li>
+                Natural-language product discovery by name, SKU, product ID, and
+                description
+              </li>
+              <li>
+                Intelligent product resolution with partial and fuzzy matching
+                for minor typing mistakes
+              </li>
+              <li>Secure order lookup through authenticated OrderFlow APIs</li>
+              <li>
+                AI-assisted order preparation supporting multiple products and
+                quantities
+              </li>
+              <li>
+                Explicit user confirmation before an AI-prepared order can be
+                submitted
+              </li>
+              <li>
+                Secure tool calling with Microsoft Entra ID access-token
+                validation
+              </li>
+              <li>
+                Conversation history for follow-up questions within the current
+                chat session
+              </li>
+              <li>
+                Retrieval-Augmented Generation using PostgreSQL with the
+                pgvector extension
+              </li>
+              <li>
+                Semantic search over OrderFlow architecture, capabilities, and
+                operational documentation
+              </li>
+              <li>
+                Grounded AI responses with the retrieved source documents
+                displayed in the user interface
+              </li>
+              <li>
+                LLM-provider abstraction supporting OpenAI today with
+                extensibility for Amazon Bedrock
+              </li>
+            </ul>
+
+            <h3 className="h5 mt-4">Planned Enhancements</h3>
+
             <p className="mb-2">
-              Continued development is focused on production-oriented agentic
-              capabilities using technologies such as Amazon Bedrock and Amazon
-              Bedrock AgentCore, including:
+              Future development will extend the current AI foundation with
+              additional production-oriented agentic capabilities, including:
             </p>
 
             <ul className="mb-0">
-              <li>Natural-language order and product interactions</li>
-              <li>Secure tool calling against OMS APIs</li>
-              <li>Multi-agent orchestration</li>
-              <li>Retrieval-Augmented Generation (RAG)</li>
-              <li>Amazon Bedrock Knowledge Bases</li>
+              <li>Multi-agent orchestration for specialized workflows</li>
+              <li>Amazon Bedrock models and Knowledge Bases</li>
               <li>Amazon Bedrock Guardrails</li>
-              <li>Amazon Bedrock AgentCore</li>
-              <li>Model Context Protocol (MCP)</li>
-              <li>Grounding and citations</li>
-              <li>Conversation memory</li>
-              <li>Observability and AI evaluation</li>
+              <li>Amazon Bedrock AgentCore capabilities</li>
+              <li>Model Context Protocol (MCP) integrations</li>
+              <li>Long-term conversational memory</li>
+              <li>AI observability, tracing, and evaluation</li>
+              <li>Additional grounding, safety, and authorization controls</li>
             </ul>
           </div>
         </div>
