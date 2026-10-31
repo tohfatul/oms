@@ -26,6 +26,7 @@ env:
   VITE_ENTRA_TENANT_ID: 7a971eb6-18c3-4d21-a9d4-cde169b35a09
   VITE_OMS_API_CLIENT_ID: 13a4204d-792f-4ec3-9c1a-80a507104a9b
   VITE_API_BASE_URL: https://api.digizerones.com
+  VITE_AI_BASE_URL: https://api.digizerones.com
 
 jobs:
   deploy:
